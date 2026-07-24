@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply font-sans antialiased;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-white/40 dark:border-white/10;
+  }
+  .glass-strong {
+    @apply bg-white/85 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/50 dark:border-white/10;
+  }
+  .panel-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(148 163 184 / 0.4) transparent;
+  }
+  .panel-scroll::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .panel-scroll::-webkit-scrollbar-thumb {
+    @apply bg-slate-400/40 rounded-full;
+  }
+  .panel-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+.rsm-svg {
+  display: block;
+}
+
+.country-path {
+  transition: fill 0.2s ease, stroke 0.2s ease, filter 0.2s ease;
+  cursor: pointer;
+  outline: none;
+}
+.country-path:hover {
+  filter: brightness(1.15);
+}
+.country-path:focus {
+  outline: 2px solid #3385ff;
+  outline-offset: -2px;
+}
