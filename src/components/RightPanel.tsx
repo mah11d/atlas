@@ -8,6 +8,7 @@ import {
   countries as allCountries, languages, organizations, continents, oceans,
   getCountry, formatNumber,
 } from '@/data';
+import { groupReligions } from '@/data/religion';
 import type { ExplorerTab, Country } from '@/types';
 
 const TABS: { id: ExplorerTab; label: string; icon: typeof Globe2 }[] = [
@@ -184,37 +185,50 @@ function ExplorerOrganizations() {
 }
 
 function ExplorerReligion() {
-  const { setSelection, setExplorerTab } = useAtlas();
-  const religionMap = useMemo(() => {
-    const map: Record<string, { name: string; countries: Country[] }> = {};
-    for (const c of allCountries) {
-      const key = c.religion || 'Unknown';
-      if (!map[key]) map[key] = { name: key, countries: [] };
-      map[key].countries.push(c);
-    }
-    return Object.values(map).sort((a, b) => b.countries.length - a.countries.length);
-  }, []);
+  const { setSelection, setExplorerTab, setHighlightedCountries } = useAtlas();
+  const religionGroups = useMemo(() => groupReligions(allCountries.map((c) => ({ id: c.id, religion: c.religion }))), []);
 
   return (
     <div className="space-y-3">
-      {religionMap.map((r) => (
-        <div key={r.name} className="rounded-xl bg-white/50 dark:bg-slate-800/50 border border-white/30 dark:border-white/5 p-3">
+      {religionGroups.map((g) => (
+        <div
+          key={g.name}
+          onMouseEnter={() => setHighlightedCountries(g.sects.flatMap((s) => s.countries))}
+          onMouseLeave={() => setHighlightedCountries([])}
+          className="rounded-xl bg-white/50 dark:bg-slate-800/50 border border-white/30 dark:border-white/5 p-3"
+        >
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-bold text-slate-800 dark:text-white">{r.name}</span>
-            <span className="text-xs font-semibold text-slate-400">{r.countries.length} countries</span>
+            <span className="text-sm font-bold text-slate-800 dark:text-white">{g.name}</span>
+            <span className="text-xs font-semibold text-slate-400">{g.total} countries</span>
           </div>
-          <div className="flex flex-wrap gap-1">
-            {r.countries.slice(0, 12).map((c) => (
-              <button
-                key={c.id}
-                onClick={() => { setSelection({ kind: 'country', id: c.id }); setExplorerTab('countries'); }}
-                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-100/60 dark:bg-slate-700/60 hover:bg-brand-500/15 transition-colors"
-              >
-                <img src={c.flagUrl} alt="" className="w-4 h-3 rounded-sm object-cover" loading="lazy" />
-                <span className="text-xs font-medium text-slate-700 dark:text-slate-200">{c.name}</span>
-              </button>
+          <div className="space-y-2">
+            {g.sects.map((s) => (
+              <div key={s.name}>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">{s.name}</span>
+                  <span className="text-[10px] text-slate-400">{s.countries.length}</span>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {s.countries.slice(0, 15).map((id) => {
+                    const c = getCountry(id);
+                    if (!c) return null;
+                    return (
+                      <button
+                        key={id}
+                        onClick={() => { setSelection({ kind: 'country', id }); setExplorerTab('countries'); }}
+                        onMouseEnter={() => setHighlightedCountries([id])}
+                        onMouseLeave={() => setHighlightedCountries(g.sects.flatMap((sec) => sec.countries))}
+                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-100/60 dark:bg-slate-700/60 hover:bg-brand-500/15 transition-colors"
+                      >
+                        <img src={c.flagUrl} alt="" className="w-4 h-3 rounded-sm object-cover" loading="lazy" />
+                        <span className="text-xs font-medium text-slate-700 dark:text-slate-200">{c.name}</span>
+                      </button>
+                    );
+                  })}
+                  {s.countries.length > 15 && <span className="text-xs text-slate-400 self-center">+{s.countries.length - 15} more</span>}
+                </div>
+              </div>
             ))}
-            {r.countries.length > 12 && <span className="text-xs text-slate-400 self-center">+{r.countries.length - 12} more</span>}
           </div>
         </div>
       ))}

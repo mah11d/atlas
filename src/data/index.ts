@@ -4,6 +4,7 @@ import { generatedCountries } from './countryGenerator';
 import { languages } from './languages';
 import { organizations } from './organizations';
 import { continents, oceans, physicalFeatures } from './geography';
+import { sameMajorReligion } from './religion';
 
 // Merge hand-curated countries with generated ones, dedup by ID (hand-curated wins)
 export const allCountries: Country[] = (() => {
@@ -39,7 +40,7 @@ export function getOcean(id: string): Ocean | undefined {
   return oceanById.get(id);
 }
 
-// Similar countries by weighted factors
+// Similar countries by weighted factors — requires at least 4 commonalities
 export function similarCountries(id: string, limit = 5): { country: Country; reasons: string[] }[] {
   const c = countryById.get(id);
   if (!c) return [];
@@ -52,13 +53,13 @@ export function similarCountries(id: string, limit = 5): { country: Country; rea
     const sharedLang = other.languages.filter((l) => c.languages.includes(l));
     if (sharedLang.length) { score += 2; reasons.push('Shared language'); }
     if (other.currency === c.currency) { score += 1.5; reasons.push('Shared currency'); }
-    if (other.religion === c.religion) { score += 1; reasons.push('Same religion'); }
+    if (sameMajorReligion(c.religion, other.religion)) { score += 1; reasons.push('Same religion'); }
     const hdiDiff = Math.abs(other.hdi - c.hdi);
     if (hdiDiff < 0.05) { score += 2; reasons.push('Similar HDI'); }
     const popDiff = Math.abs(Math.log10(other.population) - Math.log10(c.population));
     if (popDiff < 0.3) { score += 1.5; reasons.push('Similar population'); }
     if (other.climateZone === c.climateZone) { score += 1; reasons.push('Similar climate'); }
-    if (score >= 2) result.push({ country: other, score, reasons });
+    if (reasons.length >= 4) result.push({ country: other, score, reasons });
   }
   return result.sort((a, b) => b.score - a.score).slice(0, limit).map((r) => ({ country: r.country, reasons: r.reasons }));
 }
@@ -84,11 +85,11 @@ export function sharedCurrencyCountries(id: string): Country[] {
   return allCountries.filter((o) => o.id !== id && o.currency === c.currency);
 }
 
-// Countries with same religion
+// Countries with same major religion
 export function sharedReligionCountries(id: string): Country[] {
   const c = countryById.get(id);
   if (!c) return [];
-  return allCountries.filter((o) => o.id !== id && o.religion === c.religion);
+  return allCountries.filter((o) => o.id !== id && sameMajorReligion(c.religion, o.religion));
 }
 
 export interface SearchResult {
