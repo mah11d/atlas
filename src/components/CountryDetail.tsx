@@ -139,8 +139,14 @@ export default function CountryDetail({ country }: { country: Country }) {
   return (
     <div className="flex flex-col h-full animate-fade-in">
       {/* Hero image */}
-      <div className="relative h-40 sm:h-48 shrink-0 overflow-hidden">
-        <img src={country.heroImage} alt={country.name} className="w-full h-full object-cover" loading="lazy" />
+      <div className="relative h-40 sm:h-48 shrink-0 overflow-hidden bg-gradient-to-br from-brand-500/30 via-slate-700/40 to-accent-500/30">
+        <img
+          src={country.heroImage}
+          alt={country.name}
+          className="w-full h-full object-cover"
+          loading="lazy"
+          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent" />
         <div className="absolute top-3 right-3 flex gap-1.5">
           <button

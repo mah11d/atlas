@@ -69,7 +69,7 @@ interface WorldMapProps {
 export default function WorldMap({ onCountryClick }: WorldMapProps) {
   const {
     theme, mapMode, selection, setSelection, setHoveredCountry, hoveredCountry,
-    highlightedCountries, setHighlightedCountries, addRecent, setExplorerTab,
+    highlightedCountries, setHighlightedCountries, addRecent, setExplorerTab, coloredHighlights,
   } = useAtlas();
   const [position, setPosition] = useState({ coordinates: [0, 20], zoom: 1 });
   const containerRef = useRef<HTMLDivElement>(null);
@@ -126,7 +126,7 @@ export default function WorldMap({ onCountryClick }: WorldMapProps) {
       const id = resolveCountryId(name);
       if (!id) return isDark ? '#1e293b' : '#cbd5e1';
       if (selectedId === id) return '#3385ff';
-      if (highlightedCountries.includes(id)) return '#22d3ee';
+      if (highlightedCountries.includes(id)) return coloredHighlights[id] || '#22d3ee';
       if (hoveredCountry === id) return isDark ? '#475569' : '#93c5fd';
       if (mapMode === 'daynight' && !isDark) {
         // Day side: warm sunny land colors
@@ -136,7 +136,7 @@ export default function WorldMap({ onCountryClick }: WorldMapProps) {
       }
       return baseFill;
     },
-    [selectedId, highlightedCountries, hoveredCountry, baseFill, isDark, mapMode]
+    [selectedId, highlightedCountries, hoveredCountry, baseFill, isDark, mapMode, coloredHighlights]
   );
 
   // Day/night terminator (simplified): compute sun longitude
@@ -269,7 +269,7 @@ export default function WorldMap({ onCountryClick }: WorldMapProps) {
               >
                 <circle
                   r={position.zoom > 3 ? 3 : 2}
-                  fill={selectedId === c.id ? '#3385ff' : highlightedCountries.includes(c.id) ? '#22d3ee' : '#f59e0b'}
+                  fill={selectedId === c.id ? '#3385ff' : highlightedCountries.includes(c.id) ? (coloredHighlights[c.id] || '#22d3ee') : '#f59e0b'}
                   stroke={isDark ? '#0f172a' : '#ffffff'}
                   strokeWidth={0.5}
                   style={{ cursor: 'pointer' }}

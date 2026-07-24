@@ -24,6 +24,10 @@ interface AtlasState {
   setHoveredCountry: (id: string | null) => void;
   highlightedCountries: string[];
   setHighlightedCountries: (ids: string[]) => void;
+  highlightMode: 'official' | 'spoken';
+  setHighlightMode: (m: 'official' | 'spoken') => void;
+  coloredHighlights: Record<string, string>;
+  setColoredHighlights: (map: Record<string, string>) => void;
   searchQuery: string;
   setSearchQuery: (q: string) => void;
   eduMode: 'none' | 'kids' | 'students' | 'travelers' | 'historians';
@@ -63,6 +67,8 @@ export function AtlasProvider({ children }: { children: ReactNode }) {
   const [notes, setNotes] = useState<Record<string, string>>(persisted.notes ?? {});
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
   const [highlightedCountries, setHighlightedCountries] = useState<string[]>([]);
+  const [highlightMode, setHighlightMode] = useState<'official' | 'spoken'>('official');
+  const [coloredHighlights, setColoredHighlights] = useState<Record<string, string>>({});
   const [searchQuery, setSearchQuery] = useState('');
   const [eduMode, setEduMode] = useState<'none' | 'kids' | 'students' | 'travelers' | 'historians'>('none');
 
@@ -121,6 +127,8 @@ export function AtlasProvider({ children }: { children: ReactNode }) {
     notes, setNote,
     hoveredCountry, setHoveredCountry,
     highlightedCountries, setHighlightedCountries,
+    highlightMode, setHighlightMode,
+    coloredHighlights, setColoredHighlights,
     searchQuery, setSearchQuery,
     eduMode, setEduMode,
   };

@@ -120,24 +120,77 @@ function ExplorerCountries() {
 }
 
 function ExplorerLanguages() {
-  const { setSelection, setHighlightedCountries } = useAtlas();
+  const { setSelection, setHighlightedCountries, highlightMode, setHighlightMode, setColoredHighlights } = useAtlas();
+
+  const PALETTE = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#84cc16', '#f43f5e', '#a3e635'];
+
+  const handleHighlight = (l: typeof languages[0]) => {
+    const countries = highlightMode === 'official' ? l.officialCountries : l.spokenCountries;
+    setHighlightedCountries(countries);
+  };
+
+  const handleMultiHighlight = () => {
+    const big = languages.filter((l) => (highlightMode === 'official' ? l.officialCountries : l.spokenCountries).length > 11);
+    const colorMap: Record<string, string> = {};
+    const allIds: string[] = [];
+    big.forEach((l, i) => {
+      const color = PALETTE[i % PALETTE.length];
+      const ids = highlightMode === 'official' ? l.officialCountries : l.spokenCountries;
+      ids.forEach((id) => { colorMap[id] = color; allIds.push(id); });
+    });
+    setColoredHighlights(colorMap);
+    setHighlightedCountries(allIds);
+  };
+
+  const clearHighlight = () => {
+    setHighlightedCountries([]);
+    setColoredHighlights({});
+  };
+
   return (
-    <div className="space-y-1.5">
-      {languages.map((l) => (
+    <div className="space-y-2">
+      <div className="flex items-center gap-1.5">
         <button
-          key={l.id}
-          onClick={() => setSelection({ kind: 'language', id: l.id })}
-          onMouseEnter={() => setHighlightedCountries(l.officialCountries)}
-          onMouseLeave={() => setHighlightedCountries([])}
-          className="w-full p-2.5 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-white/30 dark:border-white/5 hover:bg-brand-500/10 hover:border-brand-500/20 transition-all text-left"
+          onClick={() => { setHighlightMode('official'); }}
+          className={`px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all ${highlightMode === 'official' ? 'bg-brand-500 text-white' : 'bg-slate-200/60 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300'}`}
         >
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">{l.name}</span>
-            <span className="text-xs text-slate-500 dark:text-slate-400">{formatNumber(l.nativeSpeakers + l.secondSpeakers)}M</span>
-          </div>
-          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{l.family} · {l.officialCountries.length} countries</div>
+          Official
         </button>
-      ))}
+        <button
+          onClick={() => { setHighlightMode('spoken'); }}
+          className={`px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all ${highlightMode === 'spoken' ? 'bg-brand-500 text-white' : 'bg-slate-200/60 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300'}`}
+        >
+          Spoken
+        </button>
+        <button
+          onClick={handleMultiHighlight}
+          onMouseEnter={handleMultiHighlight}
+          onMouseLeave={clearHighlight}
+          className="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-gradient-to-r from-rose-500 to-amber-500 text-white transition-all hover:opacity-90 ml-auto"
+        >
+          11+ countries
+        </button>
+      </div>
+      <div className="space-y-1.5">
+        {languages.map((l) => {
+          const count = highlightMode === 'official' ? l.officialCountries.length : l.spokenCountries.length;
+          return (
+            <button
+              key={l.id}
+              onClick={() => setSelection({ kind: 'language', id: l.id })}
+              onMouseEnter={() => handleHighlight(l)}
+              onMouseLeave={clearHighlight}
+              className="w-full p-2.5 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-white/30 dark:border-white/5 hover:bg-brand-500/10 hover:border-brand-500/20 transition-all text-left"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">{l.name}</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400">{formatNumber(l.nativeSpeakers + l.secondSpeakers)}M</span>
+              </div>
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{l.family} · {count} countries</div>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

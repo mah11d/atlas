@@ -99,12 +99,35 @@ export interface SearchResult {
   sublabel: string;
 }
 
+const COUNTRY_ALIASES: Record<string, string[]> = {
+  TUR: ['turkey'],
+  CZE: ['czech republic', 'czechia'],
+  VNM: ['vietnam'],
+  KOR: ['south korea', 'korea'],
+  PRK: ['north korea'],
+  RUS: ['russia'],
+  IRN: ['iran'],
+  SAU: ['saudi arabia'],
+  ARE: ['uae', 'emirates'],
+  CIV: ['ivory coast'],
+  SWZ: ['swaziland'],
+  MKD: ['macedonia'],
+  VAT: ['vatican'],
+  BOL: ['bolivia'],
+  VEN: ['venezuela'],
+  LKA: ['sri lanka'],
+  MMR: ['burma'],
+  PSE: ['palestine'],
+};
+
 export function search(query: string): SearchResult[] {
   const q = query.trim().toLowerCase();
   if (!q) return [];
   const results: SearchResult[] = [];
   for (const c of allCountries) {
-    if (c.name.toLowerCase().includes(q) || c.capital.toLowerCase().includes(q) || c.iso2.toLowerCase() === q || c.id.toLowerCase() === q) {
+    const aliases = COUNTRY_ALIASES[c.id] ?? [];
+    const aliasMatch = aliases.some((a) => a.includes(q) || q.includes(a));
+    if (aliasMatch || c.name.toLowerCase().includes(q) || c.capital.toLowerCase().includes(q) || c.iso2.toLowerCase() === q || c.id.toLowerCase() === q) {
       results.push({ kind: 'country', id: c.id, label: c.name, sublabel: `Capital: ${c.capital}` });
     }
   }
